@@ -17,13 +17,13 @@ public class AlphabeticalRuling : MonoBehaviour {
     public TextMesh LetterDisplay;
 
     private string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private int counter = 0;
+    private static int counter = 1;
     private int moduleId;
     private int currentStage = 1;
     private int stages;
     private bool solved = false;
     private int correctButton;
-    private int digitAdded;
+    //private int digitAdded; I don't apparently need this here.
     private int giveAns;
     void Awake()
     {
@@ -82,7 +82,7 @@ public class AlphabeticalRuling : MonoBehaviour {
         audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
         if (!solved)
         {
-            Debug.LogFormat("[Alphabetical Ruling #{0}] You have pressed button {1}.", moduleId, i);
+            Debug.LogFormat("[Alphabetical Ruling #{0}] You have pressed button {1}.", moduleId, correctButton);
             
             if (correctted == correctButton)
             {
@@ -155,7 +155,7 @@ public class AlphabeticalRuling : MonoBehaviour {
 
     int correctButtons(TextMesh s)
     {
-
+        int digitAdded = 0;
         switch (s.text)
         {
             case "A":
@@ -189,14 +189,14 @@ public class AlphabeticalRuling : MonoBehaviour {
                 break;
             case "J":
                 int ni = 0;
-                ni = bomb.GetModuleNames().Where(x => x == "The Necronomicon").Count();
-                if (ni >= 1)
+                ni = bomb.GetModuleIDs().Where(x => x == "necronomicon").Count();
+                if (ni >= 1 && (!(bomb.GetSerialNumberNumbers().Last() == 0) || !(bomb.GetSerialNumberNumbers().Last() == 9)))
                 {
                     digitAdded = int.Parse(NumberDisplays[0].text) + oldOnes(bomb.GetSerialNumberNumbers().Last());
                 }
                 else
                 {
-                    int pi = bomb.GetPorts().Where(x => x=="ps/2").Count();
+                    int pi = bomb.GetPortCount(Port.PS2);
                     digitAdded = int.Parse(NumberDisplays[0].text) + pi;
                 }
                 break;
@@ -233,20 +233,13 @@ public class AlphabeticalRuling : MonoBehaviour {
                 digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortCount(Port.PS2);
                 break;
             case "Q":
-                if (bomb.GetSerialNumberLetters().Count() < 4)
+                if (bomb.GetPortCount() > 2)
                 {
-                    digitAdded = int.Parse(NumberDisplays[0].text) + (bomb.GetSerialNumberLetters().Count() * bomb.GetSerialNumberLetters().First());
+                    digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortPlateCount() + 2;
                 }
                 else
                 {
-                    if (bomb.GetSerialNumberNumbers().Sum() > 38)
-                    {
-                        digitAdded = int.Parse(NumberDisplays[0].text) + (bomb.GetSerialNumberNumbers().Sum() % 20);
-                    }
-                    else
-                    {
-                        digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetSerialNumberNumbers().Sum();
-                    }
+                    digitAdded = int.Parse(NumberDisplays[0].text);
                 }
                 break;
             case "R":
@@ -300,7 +293,7 @@ public class AlphabeticalRuling : MonoBehaviour {
                 digitAdded = int.Parse(NumberDisplays[0].text) * 25;
                 break;
             case "X":
-                digitAdded = int.Parse(NumberDisplays[0].text) + 25;
+                digitAdded = int.Parse(NumberDisplays[0].text) + 18;
                 if (bomb.GetBatteryCount(Battery.D) == 2 || bomb.GetBatteryCount(Battery.AA) == 6)
                 {
                     digitAdded %= 5;
@@ -349,7 +342,7 @@ public class AlphabeticalRuling : MonoBehaviour {
     {
         string[] parameters = command.Split(' ');
         if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-        {
+        {   
             yield return null;
             if (parameters.Length < 2)
             {
