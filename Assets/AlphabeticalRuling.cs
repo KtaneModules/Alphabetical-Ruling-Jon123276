@@ -23,8 +23,19 @@ public class AlphabeticalRuling : MonoBehaviour {
     private int stages;
     private bool solved = false;
     private int correctButton;
+    private static string mess = "You did it!";
     //private int digitAdded; I don't apparently need this here.
     private int giveAns;
+    private int[] a = new int[3]{0, 0, 0};
+    IEnumerator giveMess()
+    {
+        yield return null;
+        for (int i = 0; i < mess.Length; i++)
+        {
+            NumberDisplays[0].text += mess[i];
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
     void Awake()
     {
         moduleId = counter++;
@@ -61,7 +72,7 @@ public class AlphabeticalRuling : MonoBehaviour {
         {
             giveAns++;
         }
-        Debug.LogFormat("[Alphabetical Ruling #{0}] Number to press: {1}", moduleId, giveAns);
+
     }
 	// Use this for initialization
 	void Start () {
@@ -75,7 +86,6 @@ public class AlphabeticalRuling : MonoBehaviour {
     }
     void Pressing(int i)
     {
-
         int correctted = giveAns;
         correctButton = i + 1;
         button[i].AddInteractionPunch();
@@ -89,11 +99,20 @@ public class AlphabeticalRuling : MonoBehaviour {
                 correct();
                 if (currentStage == 3)
                 {
-                    module.HandlePass();
-                    solved = true;
                     NumberDisplays[0].text = "";
+                    NumberDisplays[0].transform.localPosition = new Vector3(-4f, 0.01f, 4.42f);
+                    NumberDisplays[0].fontSize = 40;
                     NumberDisplays[1].text = "";
                     LetterDisplay.text = "";
+                    int n = 1;
+                    foreach (int s in a)
+                    {
+                        Debug.LogFormat("[Alphabetical Ruling #{0}] Number {1} to input: {2}", moduleId, n, s);
+                        n++;
+                    }
+                    StartCoroutine(giveMess());
+                    solved = true;
+                    module.HandlePass();
                 }
                 else
                 {
@@ -118,31 +137,31 @@ public class AlphabeticalRuling : MonoBehaviour {
     }
     int oldOnes(int aq)
     {
-        if (((aq % 8) + 1) == 1)
+        if ((aq % 8) == 1)
         {
             return 2;
         }
-        else if (((aq % 8) + 1) == 2)
+        else if ((aq % 8) == 2)
         {
             return 30;
         }
-        else if (((aq % 8) + 1) == 3)
+        else if ((aq % 8) == 3)
         {
             return 33;
         }
-        else if (((aq % 8) + 1) == 4)
+        else if ((aq % 8) == 4)
         {
             return 38;
         }
-        else if (((aq % 8) + 1) == 5)
+        else if ((aq % 8) == 5)
         {
             return 28;
         }
-        else if (((aq % 8) + 1) == 6)
+        else if ((aq % 8) == 6)
         {
             return 29;
         }
-        else if (((aq % 8) + 1) == 7)
+        else if ((aq % 8) == 7)
         {
             return 18;
         }
@@ -152,45 +171,51 @@ public class AlphabeticalRuling : MonoBehaviour {
         }
     }
     
-
+    int factorialGive(int a)
+    {
+        int b = 1;
+        for (int i = a; i > 0; i--)
+        {
+            b *= i;
+        }
+        return b;
+    }
     int correctButtons(TextMesh s)
     {
         int digitAdded = 0;
         switch (s.text)
         {
             case "A":
-                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetBatteryCount(Battery.AA);
+                digitAdded = int.Parse(NumberDisplays[0].text) - bomb.GetSerialNumberNumbers().Last();
                 break;
             case "B":
-                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetBatteryHolderCount();
+                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortCount(Port.Parallel);
                 break;
             case "C":
-                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortCount();
+                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetBatteryHolderCount();
                 break;
             case "D":
-                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetBatteryCount(Battery.D);
+                digitAdded = int.Parse(NumberDisplays[0].text) - bomb.GetBatteryCount(Battery.AA);
                 break;
             case "E":
-                digitAdded = int.Parse(NumberDisplays[0].text) + 5;
+                digitAdded = int.Parse(NumberDisplays[0].text) + 280;
                 break;
             case "F":
-                digitAdded = int.Parse(NumberDisplays[0].text) % 5;
+                digitAdded = int.Parse(NumberDisplays[0].text) % 6;
                 break;
             case "G":
-                digitAdded = int.Parse(NumberDisplays[0].text) + 69;
+                digitAdded = int.Parse(NumberDisplays[0].text) - 69;
                 break;
             case "H":
-                int gi = 0;
-                gi = bomb.GetModuleNames().Where(x => x == "Forget Me Now").Count();
-                digitAdded = int.Parse(NumberDisplays[0].text) + gi;
+                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortCount(Port.PS2);
                 break;
             case "I":
-                digitAdded = int.Parse(NumberDisplays[0].text) + 18;
+                digitAdded = int.Parse(NumberDisplays[0].text) - bomb.GetModuleIDs().Where(x => x == "omegaForget").Count();
                 break;
             case "J":
                 int ni = 0;
                 ni = bomb.GetModuleIDs().Where(x => x == "necronomicon").Count();
-                if (ni >= 1 && (!(bomb.GetSerialNumberNumbers().Last() == 0) || !(bomb.GetSerialNumberNumbers().Last() == 9)))
+                if (ni >= 1 && (!(bomb.GetSerialNumberNumbers().Last() == 0) && !(bomb.GetSerialNumberNumbers().Last() == 9)))
                 {
                     digitAdded = int.Parse(NumberDisplays[0].text) + oldOnes(bomb.GetSerialNumberNumbers().Last());
                 }
@@ -217,20 +242,20 @@ public class AlphabeticalRuling : MonoBehaviour {
                 digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetModuleNames().Count();
                 break;
             case "N":
-                if (bomb.GetBatteryCount(Battery.D) == 2 || bomb.GetBatteryCount(Battery.AA) == 6)
+                if (bomb.GetBatteryCount() == 2 && bomb.GetBatteryHolderCount() == 1 && bomb.GetPortCount(Port.PS2) > 0)
                 {
-                    digitAdded = int.Parse(NumberDisplays[0].text) % 5;
+                    digitAdded = int.Parse(NumberDisplays[0].text) - factorialGive(bomb.GetSerialNumberNumbers().Last());
                 }
                 else
                 {
-                    digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortPlateCount();
+                    digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetModuleIDs().Where(x => x == "kugelblitz").Count();
                 }
                 break;
             case "O":
-                digitAdded = int.Parse(NumberDisplays[0].text) + 18;
+                digitAdded = int.Parse(NumberDisplays[0].text) + 81;
                 break;
             case "P":
-                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortCount(Port.PS2);
+                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortCount(Port.Serial);
                 break;
             case "Q":
                 if (bomb.GetPortCount() > 2)
@@ -243,14 +268,8 @@ public class AlphabeticalRuling : MonoBehaviour {
                 }
                 break;
             case "R":
-                if ((bomb.GetBatteryCount() + bomb.GetPortCount(Port.PS2)) - bomb.GetSerialNumberNumbers().Sum() < 0)
-                {
-                    digitAdded = int.Parse(NumberDisplays[0].text) + 1;
-                }
-                else
-                {
-                    digitAdded = int.Parse(NumberDisplays[0].text) + (bomb.GetBatteryCount() + bomb.GetPortCount(Port.PS2)) - bomb.GetSerialNumberNumbers().Sum();
-                }
+                digitAdded = int.Parse(NumberDisplays[0].text) + (bomb.GetBatteryCount(Battery.D) + bomb.GetPortCount(Port.PS2)) - bomb.GetSerialNumberNumbers().Sum();
+                digitAdded = Math.Abs(digitAdded);
                 break;
             case "S":
                 digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetSerialNumberNumbers().Sum();
@@ -285,7 +304,7 @@ public class AlphabeticalRuling : MonoBehaviour {
                 }
                 else
                 {
-                    digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetBatteryCount();
+                    digitAdded = int.Parse(NumberDisplays[0].text) * 49;
                     break;
                 }
                 
@@ -293,34 +312,25 @@ public class AlphabeticalRuling : MonoBehaviour {
                 digitAdded = int.Parse(NumberDisplays[0].text) * 25;
                 break;
             case "X":
-                digitAdded = int.Parse(NumberDisplays[0].text) + 18;
-                if (bomb.GetBatteryCount(Battery.D) == 2 || bomb.GetBatteryCount(Battery.AA) == 6)
-                {
-                    digitAdded %= 5;
-                }
-                else
-                {
-                    digitAdded += bomb.GetPortPlateCount();
-                }
-                digitAdded += bomb.GetSerialNumberNumbers().Sum();
-                digitAdded += bomb.GetBatteryCount(Battery.AA);
-                if (bomb.GetSerialNumberNumbers().Sum() > 10)
-                {
-                    digitAdded *= 5;
-                }
-                else
-                {
-                    digitAdded *= 10;
-                }
-                digitAdded %= 100;
-                digitAdded += bomb.GetPortPlateCount();
+                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetBatteryCount() + bomb.GetBatteryHolderCount();
                 break;
             case "Y":
-                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortPlateCount();
+                digitAdded = int.Parse(NumberDisplays[0].text) + bomb.GetPortPlateCount()-1;
                 break;
             case "Z":
                 digitAdded = int.Parse(NumberDisplays[0].text) + 11;
                 break;
+        }
+        a[currentStage-1] += digitAdded % 10;
+        digitAdded %= 10;
+        if (digitAdded < 0) { digitAdded += 10; };
+        if (digitAdded == 0)
+        {
+            Debug.LogFormat("[Alphabetical Ruling #{0}] Number to press: {1}", moduleId, digitAdded+1);
+        }
+        else
+        {
+            Debug.LogFormat("[Alphabetical Ruling #{0}] Number to press: {1}", moduleId, digitAdded);
         }
         Debug.LogFormat("[Alphabetical Ruling #{0}] Rule used: {1}", moduleId, s.text);
         return digitAdded;
